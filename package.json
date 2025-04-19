@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "chart.js": "^4.4.4",
+    "expo": "^52.0.7",
+    "react-chartjs-2": "^5.2.0",
+    "web-streams-polyfill": "^4.0.0",
+    "typescript": "^5.3.3",
+    "@types/react": "~18.3.12"
+  }
+}
