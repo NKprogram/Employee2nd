@@ -76,7 +76,7 @@ const columns: GridColDef[] = [
    },
 ]; 
 
-const getStatusIcon = (status) => {
+const getStatusIcon = (status: string) => {
   switch (status) {
     case 'Offer':
       return <CelebrationIcon style={{ color: 'gold', marginRight: 8 }} />;
@@ -85,7 +85,7 @@ const getStatusIcon = (status) => {
   }
 };
 
-const getTitleIcon = (title) => {
+const getTitleIcon = (title: string) => {
   switch (title) {
     case 'Software Developer':
       return <DeveloperModeIcon style={{ color: 'blue', marginRight: 8 }} />;

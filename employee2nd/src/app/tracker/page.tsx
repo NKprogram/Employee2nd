@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from "react";
-import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
-import { Dialog, DialogActions, DialogContent, DialogTitle, Button, TextField, Select, MenuItem, FormControl, InputLabel } from "@mui/material";
+import { DataGrid, GridActionsCellItem, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
+import { Dialog, DialogActions, DialogContent, DialogTitle, Button, TextField, Select, MenuItem, FormControl, InputLabel, SelectChangeEvent } from "@mui/material";
 import axios from "axios";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -55,8 +55,10 @@ const Tracker = () => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const handleChange = (e) => {
-    setNewApp({ ...newApp, [e.target.name]: e.target.value });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }> | SelectChangeEvent<string>) => {
+    const name = e.target.name as keyof typeof newApp;
+    const value = e.target.value;
+    setNewApp({ ...newApp, [name]: value });
   };
 
   const addApplication = async () => {
@@ -70,7 +72,7 @@ const Tracker = () => {
     }
   };
 
-  const deleteApplication = async (id) => {
+  const deleteApplication = async (id: string) => {
     try {
       const response = await axios.delete(`/api/deleteApplication/${id}`);
       if (response.data.success) {
@@ -110,7 +112,7 @@ const Tracker = () => {
     marginBottom: '2rem',
   };
 
-  const getStatusIcon = (status) => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
       case "Applied":
         return <CheckCircleIcon style={{ color: "green", marginRight: 8 }} />;
@@ -127,7 +129,7 @@ const Tracker = () => {
     }
   };
 
-  const getTitleIcon = (title) => {
+  const getTitleIcon = (title: string) => {
     switch (title) {
       case "Software Developer":
         return <DeveloperModeIcon style={{ color: "blue", marginRight: 8 }} />;
@@ -156,46 +158,73 @@ const Tracker = () => {
     }
   };
 
-  const columns = [
+  const columns: GridColDef[] = [
     {
       field: 'title',
       headerName: 'Title',
       width: 200,
       flex: 1.25,
-      renderCell: (params) => (
+      renderCell: (params: GridRenderCellParams<{ _id: string }, string>) => (
         <>
-          {getTitleIcon(params.value)}
+          {getTitleIcon(params.value || "")}
           {params.value}
         </>
       ),
     },
-    { field: 'company', headerName: 'Company Name', width: 200, flex: 1 },
+    {
+      field: 'company',
+      headerName: 'Company Name',
+      width: 200,
+      flex: 1,
+    },
     {
       field: 'status',
       headerName: 'Status',
       width: 160,
       flex: 1,
-      renderCell: (params) => (
+      renderCell: (params: GridRenderCellParams<{ _id: string }, string>) => (
         <>
-          {getStatusIcon(params.value)}
+          {getStatusIcon(params.value || "")}
           {params.value}
         </>
       ),
     },
-    { field: 'minPay', headerName: 'Min Pay', type: 'number', align: 'left', headerAlign: 'left', flex: 1, renderCell: (params) => `$ ${params.value.toLocaleString()}` },
-    { field: 'maxPay', headerName: 'Max Pay', type: 'number', align: 'left', headerAlign: 'left', flex: 1, renderCell: (params) => `$ ${params.value.toLocaleString()}` },
-    { field: 'location', headerName: 'Location', flex: 1 },
-    { field: 'date', headerName: 'Date Applied', flex: 1 },
     {
-      field: "actions",
-      type: "actions",
-      headerName: "Actions",
+      field: 'minPay',
+      headerName: 'Min Pay',
+      align: 'left',
+      headerAlign: 'left',
+      flex: 1,
+      renderCell: (params: GridRenderCellParams<{ _id: string }, number>) => `$ ${params.value?.toLocaleString()}`,
+    },
+    {
+      field: 'maxPay',
+      headerName: 'Max Pay',
+      align: 'left',
+      headerAlign: 'left',
+      flex: 1,
+      renderCell: (params: GridRenderCellParams<{ _id: string }, number>) => `$ ${params.value?.toLocaleString()}`,
+    },
+    {
+      field: 'location',
+      headerName: 'Location',
+      flex: 1,
+    },
+    {
+      field: 'date',
+      headerName: 'Date Applied',
+      flex: 1,
+    },
+    {
+      field: 'actions',
+      type: 'actions',
+      headerName: 'Actions',
       width: 100,
-      renderCell: (params) => (
+      renderCell: (params: GridRenderCellParams<{ _id: string }>) => (
         <GridActionsCellItem
           icon={<DeleteIcon color="error" />}
           label="Delete"
-          onClick={() => deleteApplication(params.id)}
+          onClick={() => deleteApplication(params.row._id)}
         />
       ),
     },
@@ -209,11 +238,15 @@ const Tracker = () => {
       <DataGrid
         rows={applications}
         columns={columns}
-        pageSize={5}
-        rowsPerPageOptions={[5]}
+        initialState={{
+          pagination: {
+            paginationModel: { pageSize: 5 },
+          },
+        }}
+        paginationModel={{ page: 0, pageSize: 5 }}
         checkboxSelection
-        disableSelectionOnClick
-        getRowId={(row) => row._id}
+        disableRowSelectionOnClick
+        getRowId={(row: { _id: string }) => row._id}
         sx={{
           '& .MuiDataGrid-columnHeaders': {
             backgroundColor: 'rgba(235, 235, 235, 0.7)',
@@ -317,7 +350,7 @@ const Tracker = () => {
             variant="standard"
             value={newApp.date}
             onChange={handleChange}
-            InputLabelProps={{ shrink: true }}
+            slotProps={{ inputLabel: { shrink: true } }}
           />
         </DialogContent>
         <DialogActions>

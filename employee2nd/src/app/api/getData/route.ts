@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import clientPromise from '../../../../lib/mongodb';  // Correct path to mongodb.ts
+import { NextResponse } from 'next/server';
+import clientPromise from '../../../../lib/mongodb';
 
 export async function GET() {
   try {
@@ -7,11 +7,13 @@ export async function GET() {
     const db = client.db('testdb'); // Replace with your actual database name
     const collection = db.collection('testCollection'); // Replace with your actual collection name
 
-    // Fetch all documents from the collection
     const data = await collection.find({}).toArray();
 
     return NextResponse.json({ success: true, data });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    if (error instanceof Error) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ success: false, error: 'Unknown error occurred' }, { status: 500 });
   }
 }
